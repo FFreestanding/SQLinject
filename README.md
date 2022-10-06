@@ -523,6 +523,10 @@ BIGINT溢出	5.5.5及其以上版本
 ?order=if(表达式，1，sleep(1))
 ```
 
+## 宽字节注入
+
+https://blog.csdn.net/qq_45927819/article/details/123763888
+
 ## 其他
 
 在  MySQL 中，存储过程和函数的信息存储在  information_schema  数据库下的  Routines  表中，可以通过查询该表的记录来查询存储过程和函数的信息，其基本的语法形式如下:
