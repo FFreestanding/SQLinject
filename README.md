@@ -11,6 +11,18 @@ payload="-1'union select 1,2,group_concat(column_name) from information_schema.c
 payload="-1'union select id,username,password from ctfshow_user --+"
 ```
 
+## mysql弱比较
+
+
+
+## 内联注释绕过
+
+在mysq中的三种注释方法：`--`和`#`（单行注释）和`/* */`（多行注释）。如果在`/*`后加惊叹号`!`意为`/* */`里的语句将被执行。
+在mysql中`/*! ....*/`不是注释，mysql为了保持兼容，它把一些特有的仅在mysql上用的语句放在`/*!....*/`中，这样这些语句如果在其他数据库中是不会被执行，但在mysql中它会执行
+如下语句`/*!50001 select * from test */;`这里的50001表示假如 数据库是5.00.01及以上版本，该语句才会被执行
+
+
+
 ## mysql8新特性
 
 `table [表名]`显示表内容
