@@ -302,11 +302,9 @@ select b from (select 1,2,3 as b union select * from admin)a;
 
 **只有当调用函数库函数支持执行多条语句执行的时候才可以利用**
 
----
 
 如利用mysql_multi_query()函数就支持多条SQL语句同时执行
 
----
 
 还有Java项目的配置文件config.properties如下
 
@@ -318,10 +316,9 @@ db_password=root
 
 allowMultiQueries=true说明开启了堆叠
 
----
+简单的介绍一下预处理语句
 
 ```sql
-简单的介绍一下预处理语句
 prepare name from SQL语句                    # 预定义SQL语句
 execute name                                # 执行预定义语句
 (DEALLOCATE || DROP) PREPARE name;            # 删除与定义语句
@@ -330,7 +327,7 @@ SET @tn = 'table_name'                        # 储存表名
 SET @sql = concat('select * from', @tn);    # 储存SQL语句    
 prepare name from @sql;                        # 预定义语句
 execute name;                                # 执行预定义语句
-(DEALLOCATE || DROP) prepare @sql;          # 删除预定义SQL语句        
+(DEALLOCATE || DROP) prepare @sql;          # 删除预定义SQL语句
 ```
 
 ```sql
